@@ -1,0 +1,347 @@
+import React, { useState, useEffect } from 'react';
+import { Terminal, Github, Heart, Share2, Globe, Code, Clock, ShieldAlert, Cpu } from 'lucide-react';
+
+// --- Components ---
+
+const Intro = ({ onStart }) => (
+  <div className="min-h-screen bg-black text-gray-300 font-mono flex flex-col items-center justify-center p-6 animate-fade-in">
+    <div className="max-w-2xl w-full space-y-8 text-center">
+      <div className="flex justify-center mb-6">
+        <Cpu size={64} className="text-gray-600 animate-pulse" />
+      </div>
+      <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-white glitch-effect">
+        DIGITAL GRAVE
+      </h1>
+      <p className="text-xl text-gray-500">
+        你的 GitHub，是你的数字墓碑。
+      </p>
+      <div className="border-l-2 border-gray-700 pl-6 text-left py-4 my-8 bg-gray-900/30">
+        <p className="italic text-gray-400">
+          "在比特的海洋里，我们将如同法老一般，将我们的思维固化在提交记录的金字塔中。
+          当肉体消逝，git log 将是我们唯一的呼吸。"
+        </p>
+      </div>
+      <button 
+        onClick={onStart}
+        className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-medium text-white transition duration-300 ease-out border-2 border-white rounded-none hover:bg-white hover:text-black"
+      >
+        <span className="absolute inset-0 flex items-center justify-center w-full h-full text-white duration-300 -translate-x-full bg-black group-hover:translate-x-0 ease">
+          <Terminal size={20} />
+        </span>
+        <span className="absolute flex items-center justify-center w-full h-full text-white transition-all duration-300 transform group-hover:translate-x-full ease">
+          初始化遗嘱
+        </span>
+        <span className="relative invisible">初始化遗嘱</span>
+      </button>
+    </div>
+  </div>
+);
+
+const ConfigForm = ({ onSubmit, loading }) => {
+  const [username, setUsername] = useState('');
+  const [message, setMessage] = useState('');
+  const [step, setStep] = useState(1);
+
+  const handleNext = () => {
+    if (username.trim()) setStep(2);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (message.trim()) onSubmit({ username, message });
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center p-4">
+      <div className="max-w-xl w-full bg-zinc-900 border border-zinc-800 p-8 shadow-2xl relative overflow-hidden">
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 h-1 bg-zinc-800 w-full">
+          <div 
+            className="h-full bg-white transition-all duration-500 ease-out"
+            style={{ width: step === 1 ? '50%' : '100%' }}
+          ></div>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-6 animate-fade-in-up">
+            <div className="flex items-center gap-3 text-gray-400 mb-8">
+              <Github size={24} />
+              <span>Step 1: 身份锚定</span>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-gray-500">GitHub ID</label>
+              <input 
+                type="text" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="torvalds"
+                className="w-full bg-black border-b border-gray-700 p-4 text-2xl focus:outline-none focus:border-white transition-colors placeholder-gray-800"
+                autoFocus
+              />
+            </div>
+            
+            <div className="pt-8 flex justify-end">
+              <button 
+                onClick={handleNext}
+                disabled={!username}
+                className="px-6 py-2 bg-white text-black hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                下一步 {'->'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in-up">
+            <div className="flex items-center gap-3 text-gray-400 mb-8">
+              <Code size={24} />
+              <span>Step 2: 最后的 Commit</span>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-sm uppercase tracking-widest text-gray-500 block">
+                如果我明天消失，我希望我的代码被记住是因为...
+              </label>
+              <textarea 
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="它曾让某个深夜调试的陌生人感到不再孤单..."
+                className="w-full h-40 bg-black border border-gray-700 p-4 text-lg focus:outline-none focus:border-white transition-colors resize-none leading-relaxed text-gray-300 placeholder-gray-800"
+                autoFocus
+              />
+            </div>
+
+            <div className="pt-4 flex justify-between items-center">
+              <button 
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-gray-500 hover:text-white transition-colors text-sm"
+              >
+                {'<-'} 返回
+              </button>
+              <button 
+                type="submit"
+                disabled={!message || loading}
+                className="px-6 py-2 bg-white text-black hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                {loading ? '提取数据中...' : '生成墓碑'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Tombstone = ({ data }) => {
+  const [ipfsHash, setIpfsHash] = useState(null);
+  const [isMinting, setIsMinting] = useState(false);
+
+  // Simulate generating a unique hash for the tombstone
+  const generateHash = () => {
+    setIsMinting(true);
+    setTimeout(() => {
+      setIpfsHash('QmXyZ' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+      setIsMinting(false);
+    }, 2500);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'UNKNOWN';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+  };
+
+  // Mock data fallback if API fails or for demo
+  const user = data.user || {
+    name: "Unknown Soul",
+    login: "ghost",
+    avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+    created_at: "2010-01-01T00:00:00Z",
+    bio: "The user has left the simulation."
+  };
+  const lastPush = data.lastPush || new Date().toISOString();
+  const topRepo = data.topRepo || { name: "legacy-code", description: "A final contribution to the void.", stargazers_count: 404, language: "C++" };
+
+  return (
+    <div className="min-h-screen bg-stone-950 text-stone-400 font-serif flex flex-col items-center py-12 px-4 selection:bg-stone-700 selection:text-white">
+      {/* The Monument Card */}
+      <div className="max-w-3xl w-full bg-black border border-stone-800 shadow-2xl relative p-8 md:p-16 mb-12">
+        
+        {/* Ornamental Border */}
+        <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-stone-600"></div>
+        <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-stone-600"></div>
+        <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-stone-600"></div>
+        <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-stone-600"></div>
+
+        {/* Header: Photo & Identity */}
+        <div className="flex flex-col items-center text-center space-y-6 mb-12">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden grayscale contrast-125 border-4 border-stone-900 shadow-lg">
+            <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-5xl text-stone-200 tracking-widest uppercase font-bold">
+              {user.name || user.login}
+            </h1>
+            <p className="text-stone-600 font-mono text-sm tracking-widest">@{user.login}</p>
+          </div>
+        </div>
+
+        {/* The Timeline */}
+        <div className="flex justify-center items-center gap-8 mb-16 font-mono text-xs md:text-sm text-stone-500 border-t border-b border-stone-900 py-6">
+          <div className="text-center">
+            <span className="block text-stone-700 uppercase mb-1">Initialized</span>
+            {formatDate(user.created_at)}
+          </div>
+          <div className="h-px w-12 bg-stone-800"></div>
+          <div className="text-center">
+            <span className="block text-stone-700 uppercase mb-1">Terminated</span>
+            {formatDate(lastPush)}
+          </div>
+        </div>
+
+        {/* The Epitaph (User Message) */}
+        <div className="mb-16 text-center space-y-6">
+          <div className="inline-block mb-4">
+            <Code size={20} className="text-stone-700 mx-auto" />
+          </div>
+          <p className="text-xl md:text-2xl text-stone-300 leading-relaxed italic font-light max-w-2xl mx-auto">
+            "{data.message}"
+          </p>
+        </div>
+
+        {/* The Magnum Opus (Top Repo) */}
+        <div className="mb-16">
+          <h3 className="text-center text-stone-700 text-xs uppercase tracking-[0.3em] mb-6">Magnum Opus</h3>
+          <div className="border border-stone-900 bg-stone-900/20 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group hover:border-stone-700 transition-colors">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-stone-300 font-mono text-lg">{topRepo.name}</span>
+                <span className="px-2 py-0.5 text-[10px] border border-stone-800 text-stone-600 rounded-full uppercase">{topRepo.language || 'Code'}</span>
+              </div>
+              <p className="text-stone-500 text-sm line-clamp-2">{topRepo.description || "No description provided."}</p>
+            </div>
+            <div className="flex items-center gap-1 text-stone-500 font-mono text-sm">
+              <span className="text-stone-300">{topRepo.stargazers_count}</span> stars
+            </div>
+          </div>
+        </div>
+
+        {/* Footer: Last Hash */}
+        <div className="text-center space-y-2">
+          <p className="text-[10px] uppercase tracking-widest text-stone-700">Final Commit Hash</p>
+          <p className="font-mono text-stone-600 text-xs md:text-sm break-all">
+            {data.lastHash || '7b3f1d2a9c4e8f0b5d6a7c8e9f0b1a2c3d4e5f6'}
+          </p>
+        </div>
+      </div>
+
+      {/* Action Area */}
+      <div className="flex flex-col items-center gap-4 animate-fade-in-up delay-500">
+        {!ipfsHash ? (
+          <button 
+            onClick={generateHash}
+            disabled={isMinting}
+            className="flex items-center gap-3 px-8 py-3 bg-stone-200 text-stone-900 hover:bg-white transition-all font-mono text-sm font-bold uppercase tracking-wider"
+          >
+            {isMinting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-stone-900 border-t-transparent rounded-full animate-spin"></div>
+                Minting to IPFS...
+              </>
+            ) : (
+              <>
+                <Globe size={16} />
+                永久封存 (Simulate IPFS)
+              </>
+            )}
+          </button>
+        ) : (
+          <div className="text-center space-y-4">
+            <div className="bg-stone-900/50 border border-stone-800 p-4 rounded text-left font-mono text-xs text-green-500/80 w-full max-w-md break-all">
+              <span className="text-stone-500 block mb-1">IPFS CID GENERATED:</span>
+              ipfs://{ipfsHash}
+            </div>
+            <div className="flex gap-4 justify-center">
+               <button className="text-stone-500 hover:text-stone-300 text-xs uppercase tracking-widest flex items-center gap-2">
+                  <Share2 size={14} /> Share
+               </button>
+               <button className="text-stone-500 hover:text-stone-300 text-xs uppercase tracking-widest flex items-center gap-2">
+                  <ShieldAlert size={14} /> Set Dead Man's Switch
+               </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- Main App & Logic ---
+
+export default function DigitalGrave() {
+  const [view, setView] = useState('intro'); // intro, config, tombstone
+  const [graveData, setGraveData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Mock fetching logic - in a real app this would hit GitHub API
+  const fetchGitHubData = async (username, message) => {
+    setLoading(true);
+    try {
+      // Trying to fetch real public data
+      const userRes = await fetch(`https://api.github.com/users/${username}`);
+      
+      let userData = null;
+      let topRepo = null;
+      let lastPush = new Date().toISOString();
+
+      if (userRes.ok) {
+        userData = await userRes.json();
+        
+        // Fetch repos to find top one
+        const reposRes = await fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=100`);
+        if (reposRes.ok) {
+          const repos = await reposRes.json();
+          // Find repo with most stars
+          if (repos.length > 0) {
+            topRepo = repos.reduce((prev, current) => (prev.stargazers_count > current.stargazers_count) ? prev : current);
+            // Use most recent push
+            const latest = repos.sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))[0];
+            lastPush = latest ? latest.pushed_at : lastPush;
+          }
+        }
+      } else {
+        // Fallback to mock data if rate limited or user not found (for demo purposes)
+        console.warn("GitHub API failed or user not found, using mock data");
+        userData = { login: username, name: username, avatar_url: `https://ui-avatars.com/api/?name=${username}&background=random&color=fff` };
+      }
+
+      setGraveData({
+        user: userData,
+        message: message,
+        topRepo: topRepo,
+        lastPush: lastPush,
+        lastHash: Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('') // Simulated hash
+      });
+      
+      // Artificial delay for dramatic effect
+      setTimeout(() => {
+        setLoading(false);
+        setView('tombstone');
+      }, 1500);
+
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="antialiased">
+      {view === 'intro' && <Intro onStart={() => setView('config')} />}
+      {view === 'config' && <ConfigForm onSubmit={(data) => fetchGitHubData(data.username, data.message)} loading={loading} />}
+      {view === 'tombstone' && graveData && <Tombstone data={graveData} />}
+    </div>
+  );
+}
