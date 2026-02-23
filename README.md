@@ -38,7 +38,7 @@
 
 1. **访问界面**：
 
-   * 直接访问我们的数字墓碑生成器网页：点击这里访问[DigitalGrave](https://milab-bit.github.io/DigitalGrave/)，即可开始体验。
+   * 直接访问我们的数字墓碑生成器网页：[点击这里访问](https://milab-bit.github.io/DigitalGrave/)，即可开始体验。
 
 2. **输入 GitHub 用户名**：
 
