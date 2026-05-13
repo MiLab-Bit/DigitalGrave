@@ -24,10 +24,10 @@ export function clamp(num: number, min: number, max: number): number {
 /**
  * Debounce a function
  */
-export function debounce<T extends (...args: unknown[]) => unknown>(
+export function debounce<T extends (...args: string[]) => void>(
   fn: T,
   ms: number
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) {
   let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);

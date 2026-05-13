@@ -1,6 +1,7 @@
 import type { GitHubRepo } from '../types';
 import { ExternalLink, Star, GitFork, Circle } from 'lucide-react';
-import { cn, formatNumber } from '../utils/helpers';
+import { cn } from '../utils/helpers';
+import { formatNumber } from '../utils/formatters';
 
 interface RepoCardProps {
   repo: GitHubRepo;

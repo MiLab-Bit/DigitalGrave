@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Github, Code2, ArrowRight, ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
-import { ProgressBar } from '../components/ProgressBar';
 import { AvatarPreview } from '../components/GitHubUserBadge';
 import { isValidGitHubUsername, debounce } from '../utils/helpers';
 

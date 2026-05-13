@@ -95,8 +95,7 @@ export interface FetchReposResult {
 
 export interface TombstoneCardProps {
   data: GraveData;
-  onMintingStart: () => void;
-  onMintingComplete: (cid: string) => void;
+  onReset: () => void;
 }
 
 export interface RepoCardProps {

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Globe, Share2, ShieldAlert } from 'lucide-react';
-import { generateIpfsCid } from '../utils/hash';
 import type { IpfsPanelProps } from '../types';
 
 export function IpfsPanel({ isMinting, ipfsHash, onMint }: IpfsPanelProps) {

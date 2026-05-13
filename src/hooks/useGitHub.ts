@@ -6,7 +6,6 @@ import {
   computeTopRepo,
   computeRecentRepo,
   computeStats,
-  buildGraveMessage,
 } from '../services/github';
 import { generateCommitHash } from '../utils/hash';
 
@@ -76,7 +75,7 @@ export function useGitHubData() {
       recentRepo,
       lastPush,
       status: userResult.status === 'error' ? 'error' : 'success',
-      errorMessage: userResult.errorMessage || reposResult.status === 'error'
+      errorMessage: userResult.error || reposResult.status === 'error'
         ? 'Some data could not be loaded' : null,
     });
   }, []);
@@ -111,5 +110,3 @@ export function useGitHubData() {
 
   return { ...state, fetchData, buildGraveData, reset };
 }
-
-export { buildGraveMessage } from '../services/github';

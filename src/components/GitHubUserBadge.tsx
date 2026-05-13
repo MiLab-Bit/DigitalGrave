@@ -1,5 +1,5 @@
 import type { GitHubUser } from '../types';
-import { formatDate, formatNumber } from '../utils/formatters';
+import { formatDate } from '../utils/formatters';
 
 interface GitHubUserBadgeProps {
   user: GitHubUser;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { GraveData, TombstoneCardProps } from '../types';
+import type { TombstoneCardProps } from '../types';
 import { GitHubUserBadge } from './GitHubUserBadge';
 import { RepoCard } from './RepoCard';
 import { IpfsPanel } from './IpfsPanel';

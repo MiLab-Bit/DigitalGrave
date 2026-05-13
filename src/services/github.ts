@@ -1,6 +1,6 @@
 /**
  * GitHub API Service
- * 
+ *
  * Strategy: Try real API first, graceful fallback on failure/limit.
  * All responses are cached in localStorage for 5 minutes.
  */
@@ -44,7 +44,6 @@ function setCache<T>(key: string, data: T): void {
 function checkRateLimit(response: Response): boolean {
   const remaining = response.headers.get('x-ratelimit-remaining');
   if (remaining === '0') return true;
-  // Also treat 403 as rate limit if there's no specific error message
   if (response.status === 403) return true;
   return false;
 }
@@ -108,30 +107,13 @@ function buildFallbackUser(username: string): GitHubUser {
   };
 }
 
-function buildFallbackRepo(username: string): GitHubRepo {
-  return {
-    name: 'legacy-code',
-    description: 'The user left no trace in the open source world.',
-    stargazers_count: 0,
-    language: null,
-    pushed_at: new Date().toISOString(),
-    fork: false,
-    html_url: `https://github.com/${username}`,
-    forks_count: 0,
-    open_issues_count: 0,
-    watchers_count: 0,
-    topics: [],
-    license: null,
-  };
-}
-
 // ==================== Public API ====================
 
 export async function fetchGitHubUser(username: string): Promise<FetchUserResult> {
   const result = await githubFetch<GitHubUser>(`/users/${username}`, username);
 
   if (result.status === 'not_found') {
-    return { user: null, status: 'not_found', error: `User "${username}" not found on GitHub` };
+    return { user: null, status: 'not_found', error: `User "${username}" not found on GitHub`, fromCache: false };
   }
 
   if (result.status === 'error' && !result.data) {
@@ -139,6 +121,7 @@ export async function fetchGitHubUser(username: string): Promise<FetchUserResult
       user: buildFallbackUser(username),
       status: 'error',
       error: 'Failed to fetch GitHub data. Showing fallback preview.',
+      fromCache: false,
     };
   }
 
@@ -147,6 +130,7 @@ export async function fetchGitHubUser(username: string): Promise<FetchUserResult
       user: null,
       status: 'rate_limited',
       error: 'GitHub API rate limit reached (60 requests/hour). Please try again later.',
+      fromCache: false,
     };
   }
 
