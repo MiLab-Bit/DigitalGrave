@@ -5,14 +5,13 @@ import { isValidGitHubUsername, debounce } from '../utils/helpers';
 
 interface ConfigPageProps {
   onSubmit: (data: { username: string; message: string }) => void;
-  onBack: () => void;
 }
 
 const STEP1_PLACEHOLDER = 'torvalds';
 const STEP2_PLACEHOLDER = '它曾让某个深夜调试的陌生人感到不再孤单...';
 const MAX_MESSAGE_LENGTH = 280;
 
-export function ConfigPage({ onSubmit, onBack }: ConfigPageProps) {
+export function ConfigPage({ onSubmit }: ConfigPageProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');

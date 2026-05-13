@@ -12,7 +12,7 @@ export function generateCommitHash(): string {
  * Uses real CIDv0 format for authenticity
  */
 export function generateIpfsCid(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  // const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const base58chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
   // IPFS CIDv0 starts with Qm, 46 characters total
   let result = 'Qm';

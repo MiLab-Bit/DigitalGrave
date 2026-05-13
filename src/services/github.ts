@@ -184,7 +184,7 @@ export function computeStats(repos: GitHubRepo[]): GitHubStats {
   };
 }
 
-export function buildGraveMessage(username: string): string {
+export function buildGraveMessage(): string {
   const messages = [
     `它曾让某个深夜调试的陌生人感到不再孤单。`,
     `留下的是代码，带不走的是时间。`,
