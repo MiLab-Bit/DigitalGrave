@@ -1,14 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import type { AppView, GraveData, ThemeId } from './types';
 import { useGitHubData } from './hooks/useGitHub';
 import { LandingPage } from './pages/LandingPage';
-import { ConfigPage } from './pages/ConfigPage';
-import { TombstonePage } from './pages/TombstonePage';
 import { CeremonyLoader } from './components/CeremonyLoader';
 import { getStoredTheme, applyTheme } from './lib/themes';
 import { parseShareParams } from './lib/share';
 import { track } from './lib/metrics';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Route-level code splitting: keep the landing view eager, lazy-load the
+// heavier config / tombstone views so the initial bundle stays small.
+const ConfigPage = lazy(() =>
+  import('./pages/ConfigPage').then(m => ({ default: m.ConfigPage })),
+);
+const TombstonePage = lazy(() =>
+  import('./pages/TombstonePage').then(m => ({ default: m.TombstonePage })),
+);
 
 const USER_RE = /^[a-zA-Z0-9-]+$/;
 
@@ -100,15 +107,17 @@ export default function App() {
       )}
 
       {view === 'landing' && <LandingPage onStart={handleStart} theme={theme} onThemeChange={handleThemeChange} />}
-      {view === 'config' && <ConfigPage onSubmit={handleConfigSubmit} theme={theme} onThemeChange={handleThemeChange} />}
-      {view === 'tombstone' && graveData && (
-        <TombstonePage
-          data={graveData}
-          onReset={handleReset}
-          theme={theme}
-          onThemeChange={handleThemeChange}
-        />
-      )}
+      <Suspense fallback={<CeremonyLoader />}>
+        {view === 'config' && <ConfigPage onSubmit={handleConfigSubmit} theme={theme} onThemeChange={handleThemeChange} />}
+        {view === 'tombstone' && graveData && (
+          <TombstonePage
+            data={graveData}
+            onReset={handleReset}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+          />
+        )}
+      </Suspense>
       </div>
     </ErrorBoundary>
   );

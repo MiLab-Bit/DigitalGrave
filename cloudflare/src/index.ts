@@ -2,9 +2,9 @@ import { renderOgImage } from './og';
 import { renderBadge } from './badge';
 import { renderHeatmap } from './heatmap';
 
-// Where the interactive SPA is hosted (GitHub Pages). The /og page links
+// Where the interactive SPA is hosted (Cloudflare Pages). The /og page links
 // crawlers and users through to the actual, interactive tombstone.
-const SPA_BASE = 'https://milab-bit.github.io/DigitalGrave/';
+const SPA_BASE = 'https://digitalgrave.pages.dev/';
 
 function decodeMsg(raw: string): string {
   try {

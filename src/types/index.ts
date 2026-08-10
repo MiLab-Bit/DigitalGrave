@@ -129,11 +129,6 @@ export interface TombstoneCardProps {
   onReset: () => void;
 }
 
-export interface RepoCardProps {
-  repo: GitHubRepo;
-  variant: 'magnum-opus' | 'default';
-}
-
 export interface IpfsPanelProps {
   isMinting: boolean;
   ipfsHash: string | null;
@@ -143,18 +138,6 @@ export interface IpfsPanelProps {
 export interface GitHubUserBadgeProps {
   user: GitHubUser;
   showPreview?: boolean;
-}
-
-export interface ProgressBarProps {
-  value: number; // 0-100
-  label?: string;
-}
-
-export interface AnimatedTextProps {
-  text: string;
-  variant: 'typewriter' | 'fade' | 'glitch';
-  speed?: number;
-  className?: string;
 }
 
 // ==================== Utility Types ====================
