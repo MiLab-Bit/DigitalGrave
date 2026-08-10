@@ -1,11 +1,18 @@
 import { useState, useCallback } from 'react';
-import type { GitHubUser, GitHubRepo, GitHubStats, GraveData } from '../types';
+
+interface FetchOutcome {
+  ok: boolean;
+  error?: string;
+  snapshot?: UseGitHubDataResult;
+}
+import type { GitHubUser, GitHubRepo, GitHubStats, GraveData, ThemeId } from '../types';
 import {
   fetchGitHubUser,
   fetchGitHubRepos,
   computeTopRepo,
   computeRecentRepo,
   computeStats,
+  computeEnrichment,
 } from '../services/github';
 import { generateCommitHash } from '../utils/hash';
 
@@ -32,7 +39,7 @@ export function useGitHubData() {
     errorMessage: null,
   });
 
-  const fetchData = useCallback(async (username: string) => {
+  const fetchData = useCallback(async (username: string): Promise<FetchOutcome> => {
     setState(prev => ({ ...prev, status: 'loading', errorMessage: null }));
 
     const [userResult, reposResult] = await Promise.all([
@@ -42,22 +49,16 @@ export function useGitHubData() {
 
     // Handle user not found
     if (userResult.status === 'not_found') {
-      setState(prev => ({
-        ...prev,
-        status: 'not_found',
-        errorMessage: userResult.error || 'User not found',
-      }));
-      return;
+      const err = userResult.error || 'User not found';
+      setState(prev => ({ ...prev, status: 'not_found', errorMessage: err }));
+      return { ok: false, error: err };
     }
 
-    // Handle rate limit
+    // Handle rate limit (no fallback user available)
     if (userResult.status === 'rate_limited' && !userResult.user) {
-      setState(prev => ({
-        ...prev,
-        status: 'rate_limited',
-        errorMessage: userResult.error || 'Rate limited',
-      }));
-      return;
+      const err = userResult.error || 'Rate limited';
+      setState(prev => ({ ...prev, status: 'rate_limited', errorMessage: err }));
+      return { ok: false, error: err };
     }
 
     const user = userResult.user!;
@@ -67,7 +68,7 @@ export function useGitHubData() {
     const stats = computeStats(repos);
     const lastPush = recentRepo?.pushed_at || new Date().toISOString();
 
-    setState({
+    const snapshot: UseGitHubDataResult = {
       user,
       repos,
       stats,
@@ -77,23 +78,33 @@ export function useGitHubData() {
       status: userResult.status === 'error' ? 'error' : 'success',
       errorMessage: userResult.error || reposResult.status === 'error'
         ? 'Some data could not be loaded' : null,
-    });
+    };
+    setState(snapshot);
+    return { ok: true, snapshot };
   }, []);
 
-  const buildGraveData = useCallback((message: string): GraveData => {
-    return {
-      user: state.user!,
-      configMessage: message,
-      topRepo: state.topRepo,
-      recentRepo: state.recentRepo,
-      lastPush: state.lastPush,
-      lastHash: generateCommitHash(),
-      ipfsHash: null,
-      createdAt: new Date().toISOString(),
-      apiStatus: state.status,
-      stats: state.stats,
-    };
-  }, [state]);
+  // NOTE: reads the freshly-fetched snapshot passed in by the caller, NOT the
+  // hook's closure state — avoids the stale-closure bug where buildGraveData
+  // ran before fetchData's setState had re-rendered the component.
+  const buildGraveData = useCallback(
+    (message: string, theme: ThemeId, snapshot: UseGitHubDataResult): GraveData => {
+      return {
+        user: snapshot.user!, // ok===true guarantees a non-null user (not_found / rate_limited return early)
+        configMessage: message,
+        topRepo: snapshot.topRepo,
+        recentRepo: snapshot.recentRepo,
+        lastPush: snapshot.lastPush,
+        lastHash: generateCommitHash(),
+        ipfsHash: null,
+        createdAt: new Date().toISOString(),
+        apiStatus: snapshot.status,
+        stats: snapshot.stats,
+        enrichment: computeEnrichment(snapshot.repos),
+        theme,
+      };
+    },
+    [],
+  );
 
   const reset = useCallback(() => {
     setState({

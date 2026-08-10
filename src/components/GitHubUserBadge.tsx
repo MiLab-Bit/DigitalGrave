@@ -10,7 +10,7 @@ export function GitHubUserBadge({ user, variant = 'badge' }: GitHubUserBadgeProp
   if (variant === 'large') {
     return (
       <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden grayscale contrast-125 border-4 border-stone-900 shadow-lg">
+        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden grayscale contrast-125 border-4 border-[var(--dg-edge)] shadow-lg">
           <img
             src={user.avatar_url}
             alt={user.login}
@@ -18,14 +18,14 @@ export function GitHubUserBadge({ user, variant = 'badge' }: GitHubUserBadgeProp
           />
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-5xl text-stone-200 tracking-widest uppercase font-bold">
+          <h1 className="text-3xl md:text-5xl text-[var(--dg-fg)] tracking-widest uppercase font-bold">
             {user.name || user.login}
           </h1>
-          <p className="text-stone-600 font-mono text-sm tracking-widest">
+          <p className="text-[var(--dg-muted)] font-mono text-sm tracking-widest">
             @{user.login}
           </p>
           {user.bio && (
-            <p className="text-stone-500 text-sm max-w-sm mx-auto italic">
+            <p className="text-[var(--dg-muted)] text-sm max-w-sm mx-auto italic">
               {user.bio}
             </p>
           )}
@@ -35,17 +35,17 @@ export function GitHubUserBadge({ user, variant = 'badge' }: GitHubUserBadgeProp
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-stone-900/20 border border-stone-900 rounded">
+    <div className="flex items-center gap-3 p-3 bg-[var(--dg-surface)] border border-[var(--dg-edge)] rounded">
       <img
         src={user.avatar_url}
         alt={user.login}
         className="w-10 h-10 rounded-full grayscale"
       />
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-stone-300 text-sm truncate">
+        <div className="font-mono text-[var(--dg-fg)] text-sm truncate">
           {user.name || user.login}
         </div>
-        <div className="text-stone-600 text-xs font-mono">
+        <div className="text-[var(--dg-muted)] text-xs font-mono">
           {formatDate(user.created_at)}
         </div>
       </div>
@@ -66,12 +66,12 @@ export function AvatarPreview({ username }: { username: string }) {
       <img
         src={avatarUrl}
         alt={username}
-        className="w-16 h-16 rounded-full border-2 border-gray-700 grayscale"
+        className="w-16 h-16 rounded-full border-2 border-[var(--dg-edge)] grayscale"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
         }}
       />
-      <span className="text-gray-500 text-xs font-mono">@{username}</span>
+      <span className="text-[var(--dg-muted)] text-xs font-mono">@{username}</span>
     </div>
   );
 }

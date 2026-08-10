@@ -1,0 +1,13 @@
+name = "digitalgrave-edge"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: serve from your own domain instead of *.workers.dev
+# routes = [{ pattern = "edge.digitalgrave.app", custom_domain = true }]
+
+# Note on limits:
+#   - OG image rendering (satori + resvg) for a single 1200x630 card completes
+#     in well under 1s, safely inside the Workers CPU budget.
+#   - No KV / D1 / secrets required. Tokens are supplied per-request by the SPA
+#     (Authorization: Bearer) and never stored on the edge.

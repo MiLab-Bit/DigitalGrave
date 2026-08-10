@@ -25,6 +25,7 @@ export interface GitHubRepo {
   language: string | null;
   pushed_at: string;
   fork: boolean;
+  archived: boolean;
   html_url: string;
   forks_count: number;
   open_issues_count: number;
@@ -56,6 +57,8 @@ export interface GraveData {
   createdAt: string;
   apiStatus: ApiStatus;
   stats: GitHubStats;
+  enrichment: GraveEnrichment | null;
+  theme: ThemeId;
 }
 
 export interface GitHubStats {
@@ -63,6 +66,34 @@ export interface GitHubStats {
   totalForks: number;
   estimatedCommits: number;
   originalRepos: number;
+}
+
+// ==================== Theme ====================
+
+export type ThemeId = 'pixel' | 'cyber' | 'ink' | 'glitch' | 'marble';
+
+export interface ThemeMeta {
+  id: ThemeId;
+  label: string;
+  /** Accent swatch for the picker */
+  swatch: string;
+}
+
+// ==================== Grave Enrichment (L0/L1/L2) ====================
+
+export interface LanguageSlice {
+  language: string;
+  count: number;
+}
+
+export interface GraveEnrichment {
+  /** L1: 生卒时间轴已由 GraveData.lastPush/created_at 覆盖 */
+  languages: LanguageSlice[]; // 陪葬品
+  archivedRepos: GitHubRepo[]; // 陪葬项目
+  longestGapDays: number | null; // 假死期：最长贡献空窗(天)
+  firstPushAt: string | null; // 最早提交时间（驱动时间轴）
+  lastPushAt: string | null; // 最晚提交时间（驱动时间轴）
+  level: 'L0' | 'L1' | 'L2'; // 实际渲染到的数据层级
 }
 
 export type AppView = 'landing' | 'config' | 'tombstone';

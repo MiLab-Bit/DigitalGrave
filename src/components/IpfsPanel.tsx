@@ -1,64 +1,113 @@
 import { useState } from 'react';
-import { Globe, Share2, ShieldAlert } from 'lucide-react';
+import { Globe, Share2, ShieldAlert, Link as LinkIcon, Copy } from 'lucide-react';
 import type { IpfsPanelProps } from '../types';
+import { track } from '../lib/metrics';
+import { HAS_CF, buildBadgeMarkdown } from '../lib/cfConfig';
 
-export function IpfsPanel({ isMinting, ipfsHash, onMint }: IpfsPanelProps) {
+interface Props extends IpfsPanelProps {
+  shareUrl?: string;
+  /** Cloudflare OG share URL (rich preview). Takes precedence over shareUrl. */
+  ogUrl?: string | null;
+  /** GitHub login, used to build the README badge snippet. */
+  userLogin?: string;
+}
+
+export function IpfsPanel({ isMinting, ipfsHash, onMint, shareUrl, ogUrl, userLogin }: Props) {
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedBadge, setCopiedBadge] = useState(false);
 
-  const handleCopy = async () => {
-    if (!ipfsHash) return;
+  const copyText = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(`ipfs://${ipfsHash}`);
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleCopyCid = async () => {
+    if (!ipfsHash) return;
+    const ok = await copyText(`ipfs://${ipfsHash}`);
+    if (ok) {
+      track('copy_ipfs');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback: select text
     }
   };
 
   const handleShare = async () => {
-    if (!ipfsHash) return;
+    const url = ogUrl ?? shareUrl ?? window.location.href;
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'My Digital Grave',
           text: 'Check out my GitHub Digital Grave!',
-          url: window.location.href,
+          url,
         });
+        track('share_native');
       } catch {
         // User cancelled or not supported
       }
     } else {
-      handleCopy();
+      const ok = await copyText(url);
+      if (ok) {
+        track('share_link');
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+      }
     }
   };
+
+  const handleCopyBadge = async () => {
+    if (!userLogin) return;
+    const md = buildBadgeMarkdown(userLogin);
+    if (!md) return;
+    const ok = await copyText(md);
+    if (ok) {
+      track('badge_copy', { user: userLogin });
+      setCopiedBadge(true);
+      setTimeout(() => setCopiedBadge(false), 2000);
+    }
+  };
+
+  const showBadge = HAS_CF && !!userLogin;
 
   if (ipfsHash) {
     return (
       <div className="text-center space-y-4 animate-fade-in-up">
-        <div className="bg-stone-900/50 border border-stone-800 p-4 rounded text-left font-mono text-xs text-green-500/80 w-full max-w-md mx-auto break-all">
-          <span className="text-stone-500 block mb-1 text-[10px] uppercase tracking-widest">
+        <div className="bg-[var(--dg-bg)] border border-[var(--dg-edge)] p-4 rounded text-left font-mono text-xs text-[var(--dg-accent)] w-full max-w-md mx-auto break-all">
+          <span className="text-[var(--dg-faint)] block mb-1 text-[10px] uppercase tracking-widest">
             IPFS CID Generated
           </span>
-          <span className="text-green-400">ipfs://{ipfsHash}</span>
+          <span className="text-[var(--dg-muted)]">ipfs://{ipfsHash}</span>
         </div>
-        <div className="flex gap-6 justify-center">
+        <div className="flex flex-wrap gap-6 justify-center">
           <button
-            onClick={handleCopy}
-            className="text-stone-500 hover:text-stone-300 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
+            onClick={handleCopyCid}
+            className="text-[var(--dg-muted)] hover:text-[var(--dg-fg)] text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
           >
-            <Share2 size={14} />
+            <LinkIcon size={14} />
             {copied ? 'Copied!' : 'Copy CID'}
           </button>
           <button
             onClick={handleShare}
-            className="text-stone-500 hover:text-stone-300 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
+            className="text-[var(--dg-muted)] hover:text-[var(--dg-fg)] text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
           >
             <Share2 size={14} />
-            Share
+            {copiedLink ? 'Link Copied!' : 'Share'}
           </button>
+          {showBadge && (
+            <button
+              onClick={handleCopyBadge}
+              className="text-[var(--dg-muted)] hover:text-[var(--dg-fg)] text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
+            >
+              <Copy size={14} />
+              {copiedBadge ? 'Badge Copied!' : 'Badge'}
+            </button>
+          )}
           <button
-            className="text-stone-500 hover:text-red-400 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
+            className="text-[var(--dg-muted)] hover:text-[var(--dg-accent)] text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
             title="Coming soon"
           >
             <ShieldAlert size={14} />
@@ -73,11 +122,11 @@ export function IpfsPanel({ isMinting, ipfsHash, onMint }: IpfsPanelProps) {
     <button
       onClick={onMint}
       disabled={isMinting}
-      className="flex items-center gap-3 px-8 py-3 bg-stone-200 text-stone-900 hover:bg-white transition-all font-mono text-sm font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+      className="flex items-center gap-3 px-8 py-3 bg-[var(--dg-fg)] text-[var(--dg-bg)] hover:opacity-80 transition-all font-mono text-sm font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer"
     >
       {isMinting ? (
         <>
-          <div className="w-4 h-4 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--dg-bg)] border-t-transparent rounded-full animate-spin" />
           <AnimatedMintingText />
         </>
       ) : (

@@ -5,7 +5,7 @@
  * All responses are cached in localStorage for 5 minutes.
  */
 
-import type { GitHubUser, GitHubRepo, ApiStatus, FetchUserResult, FetchReposResult, GitHubStats } from '../types';
+import type { GitHubUser, GitHubRepo, ApiStatus, FetchUserResult, FetchReposResult, GitHubStats, GraveEnrichment, LanguageSlice } from '../types';
 
 const BASE_URL = 'https://api.github.com';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -181,6 +181,57 @@ export function computeStats(repos: GitHubRepo[]): GitHubStats {
     totalForks,
     estimatedCommits: originalRepos * 50, // rough heuristic
     originalRepos,
+  };
+}
+
+/**
+ * Enrichment for the tombstone (P0-2). Cheap: derives everything from the
+ * already-fetched repos list — NO extra API calls (per competitive-analyst
+ * cost analysis: pure-front has 30x rate-limit headroom with 2 calls).
+ *
+ * Layers (graceful degradation):
+ *  - L0 core is always rendered by the card (username + avatar + epitaph).
+ *  - L1 = timeline (created_at / lastPush) — caller renders when repos exist.
+ *  - L2 = languages / archived repos / longest gap — this payload.
+ */
+export function computeEnrichment(repos: GitHubRepo[]): GraveEnrichment {
+  const original = repos.filter(r => !r.fork);
+
+  const langCount = new Map<string, number>();
+  for (const r of original) {
+    if (r.language) langCount.set(r.language, (langCount.get(r.language) ?? 0) + 1);
+  }
+  const languages: LanguageSlice[] = Array.from(langCount.entries())
+    .map(([language, count]) => ({ language, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const archivedRepos = original.filter(r => r.archived);
+
+  // 假死期: longest gap (days) between consecutive repo push dates.
+  const pushes = original
+    .map(r => new Date(r.pushed_at).getTime())
+    .filter(t => !Number.isNaN(t))
+    .sort((a, b) => a - b);
+  let longestGapDays: number | null = null;
+  if (pushes.length >= 2) {
+    let maxGap = 0;
+    for (let i = 1; i < pushes.length; i++) {
+      const gap = pushes[i] - pushes[i - 1];
+      if (gap > maxGap) maxGap = gap;
+    }
+    longestGapDays = Math.floor(maxGap / 86_400_000);
+  }
+
+  const firstPushAt = pushes.length > 0 ? new Date(pushes[0]).toISOString() : null;
+  const lastPushAt = pushes.length > 0 ? new Date(pushes[pushes.length - 1]).toISOString() : null;
+
+  return {
+    languages,
+    archivedRepos,
+    longestGapDays,
+    firstPushAt,
+    lastPushAt,
+    level: repos.length > 0 ? 'L2' : 'L1',
   };
 }
 

@@ -1,15 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
+// GitHub Pages deploy base for this repo is /DigitalGrave/.
+// emptyOutDir is disabled because the sandbox's safe-delete hook blocks
+// Vite from trashing the existing dist/ folder on rebuild.
 export default defineConfig({
-  plugins: [react()],
   base: '/DigitalGrave/',
-  server: {
-    port: 3000,
-    open: true,
-  },
+  plugins: [react()],
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    emptyOutDir: false,
   },
-})
+});
