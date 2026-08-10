@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// GitHub Pages deploy base for this repo is /DigitalGrave/.
-// emptyOutDir is disabled because the sandbox's safe-delete hook blocks
-// Vite from trashing the existing dist/ folder on rebuild.
+// GitHub Pages serves this repo at /DigitalGrave/ (needs that base).
+// Cloudflare Pages serves at the domain root (needs base '/').
+// Override per-target with BUILD_BASE, e.g. `BUILD_BASE=/ npm run build`.
 export default defineConfig({
-  base: '/DigitalGrave/',
+  base: process.env.BUILD_BASE || '/DigitalGrave/',
   plugins: [react()],
   build: {
     emptyOutDir: false,
